@@ -1,0 +1,367 @@
+<div class="app-shell">
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">UC</div>
+      <div>
+        <p class="eyebrow">Mock AI Client</p>
+        <h1>Universal Commerce Playground</h1>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <label class="api-key-input">
+        <span>Gemini API Key</span>
+        <input
+          type="password"
+          autocomplete="off"
+          spellcheck="false"
+          [ngModel]="runtimeConfig.geminiApiKey()"
+          (ngModelChange)="updateGeminiApiKey($event)"
+          placeholder="Paste a Gemini API key for REST orchestration" />
+      </label>
+
+      <div class="header-row">
+        <label class="merchant-picker">
+          <div class="merchant-picker-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span>Merchant</span>
+            <button class="edit-btn" (click)="openMerchantDialog()">Edit</button>
+          </div>
+          <select [value]="registry.activeMerchant().id" (change)="onMerchantChange($event)">
+            <option *ngFor="let merchant of registry.merchants()" [value]="merchant.id">
+              {{ merchant.name }}
+            </option>
+          </select>
+        </label>
+
+        <label class="model-picker" *ngIf="runtimeConfig.geminiApiKey()">
+          <span>Gemini Model</span>
+          <select [value]="gemini.selectedModel().id" (change)="onModelChange($event)">
+            <option *ngFor="let model of gemini.models" [value]="model.id">
+              {{ model.label }}
+              {{ model.tier === 'free' ? '(Free)' : model.tier === 'cheap' ? '(Cheap)' : model.tier === 'costly' ? '(Costly $$)' : '(Standard)' }}
+            </option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <section class="chat-panel">
+      <div class="chat-scroll" #chatScroll>
+        <div class="message assistant welcome">
+          <div class="avatar">AI</div>
+          <div class="content-stack">
+            <div class="bubble">
+              Welcome to the <strong>Universal Commerce Playground</strong>! I'm your AI shopping assistant.
+              <br/><br/>
+              I can help you browse products, manage your cart, and complete your checkout directly within this chat interface.
+              <br/><br/>
+              Try asking: <em>"show me products"</em>, <em>"I want roses"</em>, or click
+              <strong>Add to Checkout</strong> on any product below.
+            </div>
+          </div>
+        </div>
+
+        <div *ngFor="let message of agent.messages()" class="message" [ngClass]="message.role">
+          <div class="avatar">
+            {{ message.role === 'user' ? 'You' : message.role === 'system' ? 'Sys' : 'AI' }}
+          </div>
+
+          <div class="content-stack">
+            <div *ngIf="message.content" class="bubble">
+              {{ message.content }}
+            </div>
+
+            <div *ngIf="message.products?.length" class="product-rail">
+              <article *ngFor="let product of message.products" class="product-card">
+                <img [src]="productImage(product)" [alt]="product.title" />
+                <div class="product-body">
+                  <div>
+                    <h3>{{ product.title }}</h3>
+                    <p class="brand-text">{{ product.brand }}</p>
+                    <p class="description">{{ product.description }}</p>
+                  </div>
+
+                  <div class="product-footer">
+                    <div>
+                      <p class="price">{{ formatCurrency(product.price, product.currency) }}</p>
+                      <span class="availability">{{ availabilityLabel(product) }}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      (click)="addToCheckout(product)"
+                      [disabled]="availabilityLabel(product) !== 'In Stock'">
+                      Add to Checkout
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <section *ngIf="message.checkout as checkout" class="checkout-card">
+              <div class="checkout-header">
+                <div>
+                  <p class="eyebrow">Checkout</p>
+                  <h3>{{ checkout.status === 'completed' ? 'Order Confirmed' : 'Checkout Summary' }}</h3>
+                </div>
+                <span class="status-pill">{{ checkout.status }}</span>
+              </div>
+
+              <div class="checkout-items">
+                <article *ngFor="let lineItem of checkout.line_items" class="checkout-item">
+                  <img [src]="checkoutItemImage(lineItem)" [alt]="lineItem.item.title" />
+                  <div class="checkout-item-copy">
+                    <h4>{{ lineItem.item.title }}</h4>
+                    <p>Qty {{ lineItem.quantity }}</p>
+                  </div>
+                  <strong>{{ formatCurrency(lineItemTotal(lineItem), checkout.currency) }}</strong>
+                </article>
+              </div>
+
+              <div class="totals">
+                <div class="total-row" *ngFor="let total of checkout.totals">
+                  <span>{{ total.display_text || total.type }}</span>
+                  <strong>{{ formatCurrency(total.amount, checkout.currency) }}</strong>
+                </div>
+              </div>
+
+              <p class="checkout-id">Checkout ID: {{ checkout.id }}</p>
+
+              <div *ngIf="checkout.messages?.length" class="checkout-messages">
+                <p *ngFor="let checkoutMessage of checkout.messages">
+                  {{ checkoutMessage.content || checkoutMessage.code || 'Merchant message' }}
+                </p>
+              </div>
+
+              <section
+                *ngIf="checkout.fulfillment?.methods?.length"
+                class="fulfillment-panel">
+                <div *ngFor="let method of checkout.fulfillment?.methods" class="fulfillment-method">
+                  <div *ngIf="method.destinations?.length">
+                    <p class="fulfillment-title">Select fulfillment destination</p>
+                    <div class="selection-list">
+                      <button
+                        *ngFor="let destination of method.destinations"
+                        type="button"
+                        class="selection-chip"
+                        [class.active]="destination.id === method.selected_destination_id"
+                        (click)="selectDestination(checkout, method.id, destination.id)">
+                        {{ destinationLabel(destination) }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div *ngFor="let group of method.groups" class="fulfillment-group">
+                    <p class="fulfillment-title">Select shipping option</p>
+                    <div class="selection-list">
+                      <button
+                        *ngFor="let option of group.options"
+                        type="button"
+                        class="selection-chip"
+                        [class.active]="option.id === group.selected_option_id"
+                        (click)="selectOption(checkout, method.id, group.id, option.id)">
+                        {{ option.title }}
+                        <span *ngIf="option.totals?.length">
+                          · {{ formatCurrency(optionTotal(option), checkout.currency) }}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="checkout-actions">
+                <a
+                  *ngIf="checkout.continue_url"
+                  [href]="checkout.continue_url"
+                  target="_blank"
+                  rel="noreferrer">
+                  Go to Checkout
+                </a>
+
+                <button
+                  *ngIf="checkout.status !== 'completed'"
+                  type="button"
+                  class="primary"
+                  (click)="beginPayment(checkout)">
+                  {{ startPaymentLabel(checkout) }}
+                </button>
+              </div>
+
+              <a
+                *ngIf="checkout.order?.permalink_url"
+                [href]="checkout.order?.permalink_url || '#'"
+                target="_blank"
+                rel="noreferrer"
+                class="order-link">
+                View Order
+              </a>
+            </section>
+
+            <section *ngIf="message.paymentMethods?.length" class="payment-card">
+              <div class="payment-header">
+                <p class="eyebrow">Mock Payment</p>
+                <h3>Select a payment instrument</h3>
+              </div>
+
+              <button
+                *ngFor="let paymentMethod of message.paymentMethods"
+                type="button"
+                class="payment-option"
+                (click)="payWithMethod(message.paymentCheckoutId, paymentMethod)">
+                <span>{{ paymentMethodLabel(paymentMethod) }}</span>
+                <small>{{ paymentMethod.type | uppercase }}</small>
+              </button>
+            </section>
+          </div>
+        </div>
+        <!-- Typing / loading indicator: shown while the client is waiting for a merchant or AI response -->
+        <div class="message assistant loading-message" *ngIf="agent.isLoading()">
+          <div class="avatar">AI</div>
+          <div class="content-stack">
+            <div class="bubble typing-bubble">
+              <span class="typing-text">{{ agent.loadingText() }}</span>
+              <span class="typing-dots">
+                <span></span><span></span><span></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <button type="button" class="clear-btn" (click)="clearChat()" title="Clear Chat">Clear</button>
+        <input
+          type="text"
+          [(ngModel)]="userInput"
+          (keyup.enter)="!agent.isLoading() && sendMessage()"
+          [disabled]="agent.isLoading()"
+          placeholder="Ask for products, checkout, or payment..." />
+        <button type="button" (click)="sendMessage()" [disabled]="!userInput.trim() || agent.isLoading()">
+          <span *ngIf="!agent.isLoading()">Send</span>
+          <span *ngIf="agent.isLoading()">···</span>
+        </button>
+      </div>
+    </section>
+
+    <aside class="context-panel">
+      <section class="context-card" *ngIf="agent.currentProfile() as profile">
+        <div class="context-header success">
+          Merchant Profile: {{ registry.activeMerchant().name }}
+        </div>
+
+        <div class="context-body">
+          <p><strong>UCP Version:</strong> {{ profile.version }}</p>
+
+          <div class="chip-block">
+            <p class="chip-title">Services</p>
+            <span *ngFor="let service of profile.services" class="chip chip-service">
+              {{ serviceLabel(service) }}
+            </span>
+          </div>
+
+          <div class="chip-block">
+            <p class="chip-title">Capabilities</p>
+            <span *ngFor="let capability of profile.capabilities" class="chip">
+              {{ capabilityLabel(capability) }}
+            </span>
+          </div>
+
+          <div class="chip-block" *ngIf="profile.paymentHandlers.length">
+            <p class="chip-title">Payment Handlers</p>
+            <span *ngFor="let handler of profile.paymentHandlers" class="chip chip-payment">
+              {{ paymentHandlerLabel(handler) }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="context-card" *ngIf="agent.platformProfile() as profile">
+        <div class="context-header neutral">
+          Platform Profile
+        </div>
+
+        <div class="context-body">
+          <p><strong>Advertised URL:</strong> {{ agent.getPlatformProfileUrl() }}</p>
+          <p><strong>UCP Version:</strong> {{ profile.version }}</p>
+
+          <div class="chip-block" *ngIf="profile.capabilities.length">
+            <p class="chip-title">Platform Capabilities</p>
+            <span *ngFor="let capability of profile.capabilities" class="chip">
+              {{ capabilityLabel(capability) }}
+            </span>
+          </div>
+
+          <div class="chip-block" *ngIf="profile.paymentHandlers.length">
+            <p class="chip-title">Platform Payment Handlers</p>
+            <span *ngFor="let handler of profile.paymentHandlers" class="chip chip-payment">
+              {{ paymentHandlerLabel(handler) }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="context-card" *ngIf="agent.currentProfile()">
+        <div class="context-header neutral">Negotiated Capabilities</div>
+        <div class="context-body">
+          <p>
+            The business is authoritative for capability negotiation, but this client also computes
+            the expected local intersection so it only drives capabilities both sides advertise.
+          </p>
+
+          <div class="chip-block" *ngIf="agent.negotiatedCapabilities().length; else noNegotiatedCapabilities">
+            <span *ngFor="let capability of agent.negotiatedCapabilities()" class="chip">
+              {{ capabilityLabel(capability) }}
+            </span>
+          </div>
+
+          <ng-template #noNegotiatedCapabilities>
+            <p>No mutually compatible UCP capabilities were found yet.</p>
+          </ng-template>
+        </div>
+      </section>
+
+      <section class="context-card" *ngIf="isDiscovering">
+        <div class="context-header pending">Discovering merchant profile...</div>
+      </section>
+
+      <section class="context-card" *ngIf="!agent.currentProfile() && !isDiscovering">
+        <div class="context-header error">Discovery failed</div>
+        <div class="context-body">
+          Make sure the merchant at {{ registry.activeMerchant().url }} is running and reachable from the browser.
+        </div>
+      </section>
+
+      <section class="context-card note" *ngIf="registry.activeMerchant().type === 'rest'">
+        <div class="context-header neutral">REST API Orchestration</div>
+        <div class="context-body">
+          <p>
+            This merchant exposes a direct <strong>REST API</strong>. Your AI Client acts as the orchestrator.
+          </p>
+          <p>
+            Using your Gemini API key, the client translates your natural language requests into direct HTTP calls to the merchant's endpoints (like <code>/products</code> and <code>/checkout</code>) based on their advertised UCP capabilities.
+          </p>
+        </div>
+      </section>
+
+      <section class="context-card note" *ngIf="registry.activeMerchant().type === 'a2a'">
+        <div class="context-header neutral">Agent-to-Agent (A2A)</div>
+        <div class="context-body">
+          <p>
+            This merchant provides its own AI agent via an <strong>A2A (Agent-to-Agent)</strong> connection.
+          </p>
+          <p>
+            Instead of making direct API calls, this client forwards your messages to the merchant's agent. The merchant's agent handles the orchestration and replies with structured UI components for this client to render.
+          </p>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<app-merchant-dialog 
+  *ngIf="isMerchantDialogOpen" 
+  (closeDialog)="closeMerchantDialog()">
+</app-merchant-dialog>

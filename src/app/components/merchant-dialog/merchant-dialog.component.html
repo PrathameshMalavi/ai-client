@@ -1,0 +1,50 @@
+<div class="dialog-backdrop" (click)="onClose()">
+  <div class="dialog-container" (click)="$event.stopPropagation()">
+    <header class="dialog-header">
+      <h2>Manage Merchants</h2>
+      <button class="close-btn" (click)="onClose()">&times;</button>
+    </header>
+
+    <div class="dialog-content" *ngIf="!isEditing">
+      <ul class="merchant-list">
+        <li *ngFor="let merchant of registry.merchants()" class="merchant-list-item">
+          <div class="merchant-info">
+            <strong>{{ merchant.name }}</strong>
+            <span class="merchant-type">{{ merchant.type | uppercase }}</span>
+            <span class="merchant-url">{{ merchant.url }}</span>
+          </div>
+          <div class="merchant-actions">
+            <button (click)="onEdit(merchant)" class="action-btn">Edit</button>
+            <button (click)="onDelete(merchant)" class="action-btn delete">Delete</button>
+          </div>
+        </li>
+      </ul>
+      <button class="add-btn" (click)="onAdd()">+ Add Merchant</button>
+    </div>
+
+    <div class="dialog-content" *ngIf="isEditing">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="editingMerchant.name" placeholder="E.g. Flower Shop" />
+      </div>
+      
+      <div class="form-group">
+        <label>URL</label>
+        <input type="text" [(ngModel)]="editingMerchant.url" placeholder="E.g. http://localhost:8182" />
+      </div>
+
+      <div class="form-group">
+        <label>Type</label>
+        <select [(ngModel)]="editingMerchant.type">
+          <option value="rest">REST API</option>
+          <option value="a2a">A2A Agent</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button class="action-btn cancel" (click)="onCancel()">Cancel</button>
+        <button class="action-btn primary" (click)="onSave()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>

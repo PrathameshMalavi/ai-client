@@ -1,0 +1,825 @@
+/* =============================================================
+   UCP Mock AI Client — Component Styles
+   Design system: glassmorphism cards, orange/teal accent palette,
+   smooth micro-animations, always-visible chat layout.
+   ============================================================= */
+
+/* ── Root / Shell ─────────────────────────────────────────── */
+
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+  color: #1f2937;
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 26%),
+    linear-gradient(180deg, #fff8ef 0%, #f6f7fb 48%, #eef4ff 100%);
+}
+
+.app-shell {
+  /* Full-height flex column: header + content area */
+  height: 100vh;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.07);
+  flex-shrink: 0; /* never let the header shrink */
+}
+
+.header-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.28);
+}
+
+.brand h1 {
+  margin: 4px 0 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #9a3412;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.merchant-picker,
+.model-picker,
+.api-key-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.header-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.api-key-input input,
+.merchant-picker select,
+.model-picker select {
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid #dbe4f0;
+  border-radius: 14px;
+  background: white;
+  color: #0f172a;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.api-key-input input:focus,
+.merchant-picker select:focus,
+.model-picker select:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+}
+
+/* ── Main Grid ────────────────────────────────────────────── */
+
+/*
+ * The main grid has two columns:
+ *   - Chat panel (left, flexible) — takes remaining space
+ *   - Aside (right, fixed 320px) — independently scrollable
+ *
+ * Both panels are pinned to the same height using align-items: stretch
+ * so neither overflows the viewport. Key: min-height: 0 on all flex
+ * children allows them to shrink below their content height.
+ */
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  flex: 1;
+  min-height: 0; /* critical: allows children to shrink */
+  overflow: hidden;
+}
+
+/* ── Chat Panel ───────────────────────────────────────────── */
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* allows panel to shrink */
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 16px 56px rgba(15, 23, 42, 0.07);
+  overflow: hidden; /* clip children to rounded corners */
+}
+
+/*
+ * Chat scroll area grows to fill all available space.
+ * overflow: auto provides scrolling; min-height: 0 lets it shrink.
+ * The composer is always pinned to the bottom.
+ */
+.chat-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 20px 8px;
+  scroll-behavior: smooth;
+}
+
+/* ── Messages ─────────────────────────────────────────────── */
+
+.message {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  animation: messageIn 0.22s ease both;
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: linear-gradient(145deg, #fde68a, #fdba74);
+}
+
+.message.user .avatar {
+  background: linear-gradient(145deg, #c7d2fe, #93c5fd);
+}
+
+.message.system .avatar {
+  background: linear-gradient(145deg, #fecaca, #fda4af);
+}
+
+.content-stack {
+  max-width: min(720px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message.user .content-stack {
+  align-items: flex-end;
+}
+
+.bubble {
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: #f8fafc;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
+  font-size: 0.93rem;
+}
+
+.message.user .bubble {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: white;
+}
+
+.message.system .bubble {
+  background: #fff1f2;
+  color: #9f1239;
+}
+
+/* ── Typing / Loading Indicator ───────────────────────────── */
+
+.typing-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-style: italic;
+}
+
+.typing-text {
+  font-size: 0.88rem;
+}
+
+.typing-dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+  animation: typingDot 1.2s ease infinite;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30%           { opacity: 1;   transform: scale(1.1); }
+}
+
+/* ── Product Rail ─────────────────────────────────────────── */
+
+.product-rail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.product-card,
+.checkout-card,
+.payment-card,
+.context-card {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 20px;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.product-card:hover {
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
+}
+
+.product-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.product-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+  padding: 16px;
+}
+
+.product-body h3,
+.checkout-header h3,
+.payment-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.brand-text,
+.description,
+.checkout-item-copy p,
+.checkout-id,
+.context-body,
+.payment-option small {
+  color: #64748b;
+}
+
+.description {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.product-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.price {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.availability,
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.availability {
+  color: #166534;
+  background: #dcfce7;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+
+button,
+.checkout-actions a,
+.order-link {
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+}
+
+button:hover:not(:disabled),
+.checkout-actions a:hover,
+.order-link:hover {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.product-footer button,
+.composer button,
+.checkout-actions .primary,
+.order-link {
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+}
+
+.product-footer button:hover:not(:disabled),
+.composer button:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+}
+
+.edit-btn {
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.1);
+}
+
+.edit-btn:hover {
+  background: #dbeafe;
+  box-shadow: 0 4px 10px rgba(29, 78, 216, 0.15);
+  transform: translateY(-1px);
+}
+
+
+/* ── Checkout Card ────────────────────────────────────────── */
+
+.checkout-card,
+.payment-card {
+  padding: 18px;
+}
+
+.checkout-header,
+.payment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.status-pill {
+  color: #155e75;
+  background: #cffafe;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.checkout-items {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkout-item {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.checkout-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.checkout-item-copy h4 {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+}
+
+.totals {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.checkout-id {
+  margin: 14px 0 0;
+  font-size: 0.8rem;
+}
+
+.checkout-messages {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.88rem;
+}
+
+/* ── Fulfillment Panel ────────────────────────────────────── */
+
+.fulfillment-panel {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.fulfillment-title {
+  margin: 0 0 8px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.fulfillment-group + .fulfillment-group,
+.fulfillment-method + .fulfillment-method {
+  margin-top: 10px;
+}
+
+.selection-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selection-chip {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: white;
+  color: #0f172a;
+  font-size: 0.85rem;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.selection-chip.active {
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+}
+
+.checkout-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.checkout-actions a {
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: #0f172a;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: #e2e8f0;
+}
+
+.order-link {
+  display: inline-flex;
+  margin-top: 12px;
+}
+
+/* ── Payment Card ─────────────────────────────────────────── */
+
+.payment-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.9rem;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.14);
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.payment-option:hover {
+  background: #f1f5f9;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.3);
+}
+
+/* ── Composer (chat input bar) ────────────────────────────── */
+
+/*
+ * The composer is always pinned to the bottom of the chat panel.
+ * It does NOT scroll with the messages — it's a flex sibling of
+ * .chat-scroll, sitting outside the scroll container.
+ */
+.composer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  flex-shrink: 0; /* never shrink the composer */
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.clear-btn {
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid #cbd5e1;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.clear-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+  transform: translateY(-1px);
+}
+
+.composer input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: white;
+  font-size: 0.93rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.composer input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.composer input:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+/* ── Context / Aside Panel ────────────────────────────────── */
+
+/*
+ * The aside is a fixed-width column that scrolls independently.
+ * It never affects the height of the chat panel.
+ */
+.context-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px; /* leave room for scrollbar */
+}
+
+.context-card {
+  flex-shrink: 0; /* cards don't shrink — aside scrolls */
+}
+
+.context-header {
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: 20px 20px 0 0;
+}
+
+.context-header.success {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.context-header.pending {
+  color: #9a3412;
+  background: #ffedd5;
+}
+
+.context-header.error {
+  color: #9f1239;
+  background: #ffe4e6;
+}
+
+.context-header.neutral {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.context-body {
+  padding: 14px 16px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+/* ── Chips ────────────────────────────────────────────────── */
+
+.chip-block + .chip-block {
+  margin-top: 14px;
+}
+
+.chip-title {
+  margin: 0 0 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.chip {
+  display: inline-flex;
+  margin: 0 6px 6px 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.chip-service {
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.chip-payment {
+  color: #9a3412;
+  background: #ffedd5;
+}
+
+/* ── Responsive: narrow screens ───────────────────────────── */
+
+/*
+ * Below 900px: stack chat on top, aside below.
+ * Chat panel gets a fixed viewport-relative height so the
+ * composer stays visible without needing to scroll the page.
+ */
+@media (max-width: 900px) {
+  :host {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .app-shell {
+    height: auto;
+    overflow: visible;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+    /* Chat panel on top, aside below */
+    grid-template-rows: 70vh auto;
+    overflow: visible;
+    flex: none;
+    min-height: unset;
+  }
+
+  .chat-panel {
+    height: 70vh;
+    min-height: 400px;
+  }
+
+  .context-panel {
+    overflow: visible;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .header,
+  .composer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .api-key-input input,
+  .merchant-picker select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .composer button,
+  .product-footer button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .main-grid {
+    grid-template-rows: 65vh auto;
+  }
+
+  .chat-panel {
+    height: 65vh;
+  }
+}
