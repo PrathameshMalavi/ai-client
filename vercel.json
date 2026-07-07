@@ -1,4 +1,6 @@
 {
+  "framework": "angular",
+  "outputDirectory": "dist/ucp-angular-client/browser",
   "trailingSlash": false,
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
