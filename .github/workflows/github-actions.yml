@@ -22,13 +22,13 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: ucp-angular-client/package-lock.json
+        cache-dependency-path: package-lock.json
         
     - name: Install dependencies
-      run: cd ucp-angular-client && npm ci
+      run: npm ci
       
     - name: Run tests
-      run: cd ucp-angular-client && npm test -- --watch=false
+      run: npm test -- --watch=false
       
     - name: Build
-      run: cd ucp-angular-client && npm run build
+      run: npm run build
