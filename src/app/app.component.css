@@ -9,6 +9,7 @@
 :host {
   display: block;
   height: 100vh;
+  box-sizing: border-box;
   overflow: hidden;
   color: #1f2937;
   font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
@@ -21,6 +22,7 @@
 .app-shell {
   /* Full-height flex column: header + content area */
   height: 100vh;
+  box-sizing: border-box;
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
@@ -105,7 +107,9 @@
 .api-key-input input,
 .merchant-picker select,
 .model-picker select {
-  min-width: 200px;
+  appearance: none;
+  width: 300px;
+  max-width: 100%;
   padding: 10px 14px;
   border: 1px solid #dbe4f0;
   border-radius: 14px;
@@ -114,6 +118,16 @@
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  box-sizing: border-box;
+}
+
+.merchant-picker select,
+.model-picker select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
 }
 
 .api-key-input input:focus,
@@ -418,17 +432,17 @@ button:disabled {
 .edit-btn {
   padding: 4px 10px;
   border-radius: 8px;
-  color: #1d4ed8;
+  color: #ea580c;
   font-size: 0.75rem;
   font-weight: 700;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.1);
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.1);
 }
 
 .edit-btn:hover {
-  background: #dbeafe;
-  box-shadow: 0 4px 10px rgba(29, 78, 216, 0.15);
+  background: #ffedd5;
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.15);
   transform: translateY(-1px);
 }
 
